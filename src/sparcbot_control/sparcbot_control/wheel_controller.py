@@ -107,12 +107,24 @@ class WheelController:
         # and the state set up in __init__. Use self.log(...) to record data.
 
         # BEGIN SOLUTION
+        # Calculate the error and store in the previous_error variable
+
+        self.previous_error[LEFT] = target_velocity_m_s[LEFT] - measured_velocity_m_s[LEFT]
+        self.previous_error[RIGHT] = target_velocity_m_s[RIGHT] - measured_velocity_m_s[RIGHT]
 
 
+        self.error_integral[LEFT] = self.error_integral[LEFT] + (self.previous_error[LEFT] * dt_s )
+        self.error_integral[RIGHT] = self.error_integral[RIGHT] + (self.previous_error[RIGHT] * dt_s )
 
-        left_wheel_output = WheelControllerOutput(command=0.0) #TODO set command to your final controller output
+        u_left = self.config[LEFT].kp * self.previous_error[LEFT] + self.config[LEFT].ki * self.error_integral[LEFT] + 0.2*target_velocity_m_s[LEFT]
+        u_right = self.config[RIGHT].kp * self.previous_error[RIGHT] + self.config[RIGHT].ki * self.error_integral[RIGHT] + 0.2 *target_velocity_m_s[RIGHT]
 
-        right_wheel_output = WheelControllerOutput(command=0.0) #TODO set command to your final controller output
+        usat_left = max(-1,min(1,u_left))
+        usat_right= max(-1,min(1,u_right))
+
+        left_wheel_output = WheelControllerOutput(command=usat_left) #TODO set command to your final controller output
+
+        right_wheel_output = WheelControllerOutput(command=usat_right) #TODO set command to your final controller output
         return [left_wheel_output, right_wheel_output]
         # END SOLUTION
 
